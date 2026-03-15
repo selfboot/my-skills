@@ -1,0 +1,4 @@
+interface:
+  display_name: "Post To Anywhere"
+  short_description: "Publish one article to many platforms."
+  default_prompt: "Use $post-to-anywhere to publish one markdown or HTML article to one or more supported creator platforms."
