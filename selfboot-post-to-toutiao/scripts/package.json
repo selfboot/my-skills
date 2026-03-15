@@ -1,0 +1,8 @@
+{
+  "name": "selfboot-post-to-toutiao-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "baoyu-md": "file:./vendor/baoyu-md"
+  }
+}
