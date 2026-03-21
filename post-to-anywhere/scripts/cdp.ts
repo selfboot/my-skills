@@ -232,6 +232,9 @@ export async function launchChrome(
     '--start-maximized',
     url,
   ], { stdio: 'ignore' });
+  // Keep the launched browser open for manual follow-up, but do not let the
+  // Node process stay alive waiting on the Chrome child handle.
+  chrome.unref();
 
   const wsUrl = await waitForChromeDebugPort(port, 30_000);
   const cdp = await CdpConnection.connect(wsUrl, 30_000);

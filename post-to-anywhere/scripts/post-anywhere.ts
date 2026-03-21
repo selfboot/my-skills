@@ -13,6 +13,19 @@ interface PublishResult {
   message: string;
 }
 
+function ensureScriptDependencies(): void {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const nodeModulesDir = path.join(__dirname, "node_modules");
+  const packageJsonPath = path.join(__dirname, "package.json");
+  if (!fs.existsSync(packageJsonPath)) return;
+  if (fs.existsSync(nodeModulesDir)) return;
+
+  throw new Error(
+    `Missing script dependencies in ${nodeModulesDir}. Run: (cd "${__dirname}" && npx -y bun install)`,
+  );
+}
+
 function buildSharedArgs(options: CommonPublishOptions): string[] {
   const args: string[] = [];
   if (options.markdownFile) args.push("--markdown", options.markdownFile);
@@ -88,6 +101,8 @@ Examples:
 }
 
 async function main(): Promise<void> {
+  ensureScriptDependencies();
+
   const args = process.argv.slice(2);
   if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
     printUsage();

@@ -39,6 +39,19 @@ interface ArticleOptions {
   cdpPort?: number;
 }
 
+function ensureScriptDependencies(): void {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const nodeModulesDir = path.join(__dirname, "node_modules");
+  const packageJsonPath = path.join(__dirname, "package.json");
+  if (!fs.existsSync(packageJsonPath)) return;
+  if (fs.existsSync(nodeModulesDir)) return;
+
+  throw new Error(
+    `Missing script dependencies in ${nodeModulesDir}. Run: (cd "${__dirname}" && npx -y bun install)`,
+  );
+}
+
 async function waitForLogin(session: ChromeSession, config: GenericPlatformDefinition, timeoutMs = 180_000): Promise<boolean> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
@@ -641,6 +654,14 @@ async function openEditorSession(cdp: CdpConnection, baseSession: ChromeSession,
   return baseSession;
 }
 
+async function closeCurrentDraftPage(session: ChromeSession, platformId: string): Promise<void> {
+  try {
+    await session.cdp.send("Target.closeTarget", { targetId: session.targetId });
+  } catch (error) {
+    console.warn(`[${platformId}] Failed to close draft page: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 async function postArticle(options: ArticleOptions): Promise<void> {
   const config = getPlatformDefinition(options.platform);
   const { markdownFile, htmlFile, title, theme, color, citeStatus = true, author, summary, submit = false, profileDir, cdpPort } = options;
@@ -798,7 +819,8 @@ async function postArticle(options: ArticleOptions): Promise<void> {
       await sleep(3000);
     }
 
-    console.log(`[${config.id}] ${submit ? "Publish flow triggered" : "Draft flow triggered"}. Browser window left open.`);
+    console.log(`[${config.id}] ${submit ? "Publish flow triggered" : "Draft flow triggered"}. Closing draft page...`);
+    await closeCurrentDraftPage(session, config.id);
   } finally {
     cdp.close();
   }
@@ -828,6 +850,8 @@ Options:
 }
 
 async function main(): Promise<void> {
+  ensureScriptDependencies();
+
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) printUsage();
 

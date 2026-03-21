@@ -29,11 +29,14 @@ Before first use, suggest:
 ${BUN_X} ${SKILL_DIR}/scripts/check-permissions.ts
 ```
 
-If `scripts/node_modules` is missing, install the vendored renderer dependency first:
+Before any publish attempt, explicitly check whether `${SKILL_DIR}/scripts/node_modules` exists.
+If it is missing, tell the user you need to install dependencies first, then run:
 
 ```bash
 (cd "${SKILL_DIR}/scripts" && ${BUN_X} install)
 ```
+
+Do not skip this reminder. The shared markdown renderer depends on the vendored package in `scripts/package.json`.
 
 ## Workflow
 
@@ -90,6 +93,7 @@ Only split a platform into its own script when config is no longer enough.
 ### Step 3: Publish
 
 Default to saving drafts. Use `--submit` only when the user explicitly asks to publish.
+After a successful draft save, the automation should close the current draft/editor page instead of leaving the draft tab open.
 
 Commands:
 
@@ -119,7 +123,7 @@ Report:
 - Mode: draft or submit
 - Which platform configs were used
 - Per-platform success or failure
-- Whether Chrome windows were left open
+- Whether draft pages were closed
 
 ## References
 
