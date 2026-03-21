@@ -672,6 +672,7 @@ async function postArticle(options: ArticleOptions): Promise<void> {
   let effectiveSummary = summary || "";
   let effectiveHtmlFile = htmlFile;
   let expectedBodyText = "";
+  let launchedChrome: ReturnType<typeof launchChrome>["chrome"] | undefined;
 
   if (markdownFile) {
     console.log(`[${config.id}] Parsing markdown: ${markdownFile}`);
@@ -693,10 +694,12 @@ async function postArticle(options: ArticleOptions): Promise<void> {
     } else {
       const launched = await launchChrome(config.homeUrl, profileDir ?? config.profileDir, config.id);
       cdp = launched.cdp;
+      launchedChrome = launched.chrome;
     }
   } else {
     const launched = await launchChrome(config.homeUrl, profileDir ?? config.profileDir, config.id);
     cdp = launched.cdp;
+    launchedChrome = launched.chrome;
   }
 
   try {
@@ -823,6 +826,14 @@ async function postArticle(options: ArticleOptions): Promise<void> {
     await closeCurrentDraftPage(session, config.id);
   } finally {
     cdp.close();
+    if (launchedChrome && !launchedChrome.killed) {
+      console.log(`[${config.id}] Closing launched browser...`);
+      try {
+        launchedChrome.kill("SIGTERM");
+      } catch (error) {
+        console.warn(`[${config.id}] Failed to close launched browser: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
   }
 }
 

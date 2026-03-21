@@ -93,7 +93,9 @@ Only split a platform into its own script when config is no longer enough.
 ### Step 3: Publish
 
 Default to saving drafts. Use `--submit` only when the user explicitly asks to publish.
-After a successful draft save, the automation should close the current draft/editor page instead of leaving the draft tab open.
+After a successful draft save, the automation should close the current draft/editor page.
+If the run launched its own isolated Chrome window, close that launched browser too after the draft is saved.
+If the run reused an existing logged-in Chrome session, only close the draft/editor page and leave the existing browser alone.
 
 Commands:
 
@@ -124,6 +126,7 @@ Report:
 - Which platform configs were used
 - Per-platform success or failure
 - Whether draft pages were closed
+- Whether any launched browser windows were closed
 
 ## References
 
